@@ -1,6 +1,6 @@
 # pi-gen
 
-_Tool used to create the raspberrypi.org Raspbian images_
+_Tool used to create the brownieplayer.com images_
 
 
 ## Dependencies
