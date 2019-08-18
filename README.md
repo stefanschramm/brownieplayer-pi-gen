@@ -6,7 +6,7 @@ _Tool used to create the raspberrypi.org Raspbian images_
 ## Dependencies
 
 pi-gen runs on Debian based operating systems. Currently it is only supported on
-either Debian Stretch or Ubuntu Xenial and is known to have issues building on
+either Debian Buster or Ubuntu Xenial and is known to have issues building on
 earlier releases of these systems. On other Linux distributions it may be possible
 to use the Docker build described below.
 
@@ -77,6 +77,22 @@ The following environment variables are supported:
 
    Setting to '1' enables the QEMU mode - creating an image that can be mounted via QEMU for an emulated
    environment. These images include "-qemu" in the image file name.
+
+ * `LOCALE_DEFAULT` (Default: "en_GB.UTF-8" )
+
+   Default system locale.
+
+ * `KEYBOARD_KEYMAP` (Default: "gb" )
+
+   Default keyboard keymap.
+
+ * `KEYBOARD_LAYOUT` (Default: "English (UK)" )
+
+   Default keyboard layout.
+
+ * `TIMEZONE_DEFAULT` (Default: "Europe/London" )
+
+   Default keyboard layout.
 
  * `FIRST_USER_NAME` (Default: "pi" )
 
@@ -294,6 +310,9 @@ follows:
    export your image to test
 
 # Troubleshooting
+
+## `64 Bit Systems`
+Please note there is currently an issue when compiling with a 64 Bit OS. See https://github.com/RPi-Distro/pi-gen/issues/271
 
 ## `binfmt_misc`
 
