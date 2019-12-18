@@ -12,7 +12,7 @@ usb_drive_paths = [
         '/dev/sda',
 ]
 usb_mount_point = '/mnt/usb'
-filename_regexp = '.*\.(mp4|MP4|mov|MOV|avi|AVI|mpg|MPG)$'
+filename_regexp = '^[^.].*\.(mp4|MP4|mov|MOV|avi|AVI|mpg|MPG)$'
 omxplayer_args = ['--adev', 'both', '--blank', '--display', '7']
 recommended_audio_codecs  = ['aac']
 recommended_video_codec = 'h264'
