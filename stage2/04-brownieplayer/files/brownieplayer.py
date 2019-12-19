@@ -85,26 +85,14 @@ def main():
         log(str(i) + ". " + os.path.basename(f))
         i += 1
         try:
-            format_data, streams_data = probe(f)
+            probe_data = probe(f)
         except:
             log('   Error: Unable to decode file. Playback will probably fail.', Color.ERROR)
             has_warnings = True
             continue
-        log('   Container: %s (%s)' % (format_data['format_name'], format_data['format_long_name']))
-        for idx in streams_data:
-            s = streams_data[idx]
-            if s['codec_type'] == 'audio':
-                log('   Audio: %s, %s Hz, %s, %s Channel(s)' % (s['codec_name'], s['sample_rate'], s['sample_fmt'], s['channels']))
-                if not s['codec_name'] in recommended_audio_codecs:
-                    log('   Warning: %s is not a recommended audio codec. Playback might fail.' % s['codec_name'], Color.ERROR) 
-                    log('   Please use one of these instead: %s' % (", ".join(recommended_audio_codecs)), Color.ERROR)
-                    has_warnings = True
-            elif s['codec_type'] == 'video':
-                log('   Video: %s, %sx%s px, %s fps' % (s['codec_name'], s['width'], s['height'], s['avg_frame_rate']))
-                if s['codec_name'] != recommended_video_codec:
-                    log('   Warning: %s is not a recommended video codec. Playback might fail.' % s['codec_name'], Color.ERROR)
-                    log('   Please use %s instead.' % (recommended_video_codec), Color.ERROR)
-                    has_warnings = True
+        log('   Container: %s (%s)' % (probe_data['FORMAT'][0]['format_name'], probe_data['FORMAT'][0]['format_long_name']))
+        has_warnings = check_streams(probe_data['STREAM'])
+
     line()
 
     wait_time = 15 if has_warnings else 5
@@ -159,33 +147,46 @@ def get_media_files(path):
 
 def probe(path):
     output, err = run_cmd(['ffprobe', '-v', 'error', '-show_format', '-show_streams', path])
-    format_data = {}
-    streams_data = {}
-    stream_current = None
-    context = None
+    sections = {}
+    section_current = None
+    section_name = None
     for l in output.decode('utf-8').splitlines():
-        if l == '[FORMAT]':
-            context = 'format'
-            continue
-        if l == '[/FORMAT]':
-            context = None
-            continue
-        if l == '[STREAM]':
-            context = 'stream'
-            stream_current = {}
-            continue
-        if l == '[/STREAM]':
-            streams_data[stream_current['index']] = stream_current
-            context = None
-            continue
-        if context == None:
-            continue
+        tag = re.match('^\[(/?)(.*)\]$', l)
+        if tag != None:
+            if tag.group(1) == '':
+                # start tag ([FORMAT], [STREAM], ...)
+                context = tag.group(2)
+                section_current = {}
+                continue
+            else:
+                # end tag ([/FORMAT], ...)
+                if context not in sections:
+                        sections[context] = []
+                sections[context].append(section_current)
+                continue
+        # key value pair
         fields = l.split('=')
-        if context == 'format':
-                format_data[fields[0]] = fields[1]
-        elif context == 'stream':
-                stream_current[fields[0]] = fields[1]
-    return format_data, streams_data
+        section_current[fields[0]] = fields[1]
+
+    return sections
+
+def check_streams(streams):
+    has_warnings = False
+    for s in streams:
+        if s['codec_type'] == 'audio':
+            log('   Audio: %s, %s Hz, %s, %s Channel(s)' % (s['codec_name'], s['sample_rate'], s['sample_fmt'], s['channels']))
+            if not s['codec_name'] in recommended_audio_codecs:
+                log('   Warning: %s is not a recommended audio codec. Playback might fail.' % s['codec_name'], Color.ERROR) 
+                log('   Please use one of these instead: %s' % (", ".join(recommended_audio_codecs)), Color.ERROR)
+                has_warnings = True
+        elif s['codec_type'] == 'video':
+            log('   Video: %s, %sx%s px, %s fps' % (s['codec_name'], s['width'], s['height'], s['avg_frame_rate']))
+            if s['codec_name'] != recommended_video_codec:
+                log('   Warning: %s is not a recommended video codec. Playback might fail.' % s['codec_name'], Color.ERROR)
+                log('   Please use %s instead.' % (recommended_video_codec), Color.ERROR)
+                has_warnings = True
+    return has_warnings
+
 
 def clear_tty():
     os.system('TERM=linux setterm -foreground black -clear all > /dev/tty0');
