@@ -192,13 +192,27 @@ def clear_tty():
     os.system('TERM=linux setterm -foreground black -clear all > /dev/tty0');
 
 def play(path):
-    cmd = ['omxplayer'] + omxplayer_args + [path]
+    custom_args = get_omxplayer_args(path)
+    if custom_args != None:
+        cmd = ['omxplayer'] + custom_args + [path]
+    else:
+        cmd = ['omxplayer'] + omxplayer_args + [path]
     run_cmd(cmd)
 
 def play_loop(path):
-    cmd = ['omxplayer', '--loop'] + omxplayer_args + [path]
+    custom_args = get_omxplayer_args(path)
+    if custom_args != None:
+        cmd = ['omxplayer'] + custom_args + [path]
+    else:
+        cmd = ['omxplayer', '--loop'] + omxplayer_args + [path]
     log("Running: %s" % " ".join(cmd))
     run_cmd(cmd)
+
+def get_omxplayer_args(path):
+    match = re.match('^.*omxplayer (.*)\.[^.]*$', os.path.basename(path))
+    if match != None:
+        return match.group(1).split(' ')
+    return None
 
 def display_help():
     line()
