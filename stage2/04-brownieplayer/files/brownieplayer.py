@@ -14,7 +14,7 @@ usb_drive_paths = [
 usb_mount_point = '/mnt/usb'
 filename_regexp = '^[^.].*\.(mp4|MP4|mov|MOV|avi|AVI|mpg|MPG)$'
 omxplayer_args = ['--adev', 'both', '--blank', '--display', '7']
-recommended_audio_codecs  = ['aac']
+recommended_audio_codecs  = ['aac', 'mp3']
 recommended_video_codec = 'h264'
 local_playlist = '/home/pi/brownieplayer'
 
